@@ -179,6 +179,17 @@ entirely."
         ["Version info" cider-version]))
     map))
 
+;;; Dynamic indentation
+(defun cider--get-symbol-indent (symbol-name)
+  "Return the indent metadata for SYMBOL-NAME in the current namespace."
+  (-when-let (indent
+              (nrepl-dict-get (cider-resolve-var (cider-current-ns) symbol-name)
+                              "indent"))
+    (with-demoted-errors
+        (format ":indent metadata on ‘%s’ is unreadable! \nERROR: %%s"
+                symbol-name)
+      (cider--deep-vector-to-list (read indent)))))
+
 ;;; Dynamic font locking
 (defcustom cider-font-lock-dynamically '(macro core)
   "Specifies how much dynamic font-locking CIDER should use.
@@ -287,6 +298,7 @@ namespace itself."
   (when (consp font-lock-defaults)
     (setq-local font-lock-defaults
                 (cons 'cider-font-lock-keywords (cdr font-lock-defaults))))
+  (setq-local clojure-get-indent-function #'cider--get-symbol-indent)
   (cider-refresh-font-lock)
   (setq next-error-function #'cider-jump-to-compilation-error))
 
