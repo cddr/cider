@@ -541,3 +541,20 @@
   (should (equal (cider--deep-vector-to-list 'bug) 'bug))
   (should (equal (cider--deep-vector-to-list '[bug]) '(bug)))
   (should (equal (cider--deep-vector-to-list '(bug)) '(bug))))
+
+(ert-deftest cider--get-body-index ()
+  (should (equal (cider--get-body-index
+                  '([] [x] [x y] [x y & more]))
+                 nil))
+  (should (equal (cider--get-body-index
+                  '([] [x] [x y] [x y & [body]]))
+                 nil))
+  (should (equal (cider--get-body-index
+                  '([] [x body] [x y] [x y & body]))
+                 1))
+  (should (equal (cider--get-body-index
+                  '([body] [x] [x y] [x y & body]))
+                 0))
+  (should (equal (cider--get-body-index
+                  '([] [x] [x y] [x y & body]))
+                 2)))
