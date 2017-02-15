@@ -582,28 +582,29 @@ prompt and whether to use a new window.  Similar to `cider-find-var'."
 (defun cider-stacktrace-render-frame (buffer frame)
   "Emit into BUFFER function call site info for the stack FRAME.
 This associates text properties to enable filtering and source navigation."
-  (with-current-buffer buffer
-    (nrepl-dbind-response frame (file line flags class method name var ns fn)
-      (let ((flags (mapcar 'intern flags))) ; strings -> symbols
-        (insert-text-button (format "%26s:%5d  %s/%s"
-                                    (if (member 'repl flags) "REPL" file) line
-                                    (if (member 'clj flags) ns class)
-                                    (if (member 'clj flags) fn method))
-                            'var var 'class class 'method method
-                            'name name 'file file 'line line
-                            'flags flags 'follow-link t
-                            'action 'cider-stacktrace-navigate
-                            'help-echo "View source at this location"
-                            'font-lock-face 'cider-stacktrace-face
-                            'type 'cider-plain-button)
-        (save-excursion
-          (let ((p4 (point))
-                (p1 (search-backward " "))
-                (p2 (search-forward "/"))
-                (p3 (search-forward-regexp "[^/$]+")))
-            (put-text-property p1 p4 'font-lock-face 'cider-stacktrace-ns-face)
-            (put-text-property p2 p3 'font-lock-face 'cider-stacktrace-fn-face)))
-        (insert "\n")))))
+  (when frame
+    (with-current-buffer buffer
+      (nrepl-dbind-response frame (file line flags class method name var ns fn)
+        (let ((flags (mapcar 'intern flags))) ; strings -> symbols
+          (insert-text-button (format "%26s:%5d  %s/%s"
+                                      (if (member 'repl flags) "REPL" file) line
+                                      (if (member 'clj flags) ns class)
+                                      (if (member 'clj flags) fn method))
+                              'var var 'class class 'method method
+                              'name name 'file file 'line line
+                              'flags flags 'follow-link t
+                              'action 'cider-stacktrace-navigate
+                              'help-echo "View source at this location"
+                              'font-lock-face 'cider-stacktrace-face
+                              'type 'cider-plain-button)
+          (save-excursion
+            (let ((p4 (point))
+                  (p1 (search-backward " "))
+                  (p2 (search-forward "/"))
+                  (p3 (search-forward-regexp "[^/$]+")))
+              (put-text-property p1 p4 'font-lock-face 'cider-stacktrace-ns-face)
+              (put-text-property p2 p3 'font-lock-face 'cider-stacktrace-fn-face)))
+          (insert "\n"))))))
 
 (declare-function cider-jump-to "cider-interaction")
 
